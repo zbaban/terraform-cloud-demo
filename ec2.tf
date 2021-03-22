@@ -1,16 +1,24 @@
- variable "ec2_name" {
-   type = map 
-   default = ["dev-ec2","stage-ec2","prod-ec2"]
- }
+data "aws_ami" "ubuntu" {
+  most_recent = true
 
- 
-resource "aws_spot_instance_request" "cheap_worker" {
-    ami = "ami-09246ddb00c7c4fef"
-    instance_type = var.ec2_type
-    spot_price = "0.0016"
-    spot_type = "one-time"
-    count = 3
-    tags = {
-    Name = var.ec2_name[2]
-    }
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "HelloWorld"
+  }
 }
